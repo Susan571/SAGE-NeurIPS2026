@@ -1,6 +1,4 @@
-# TREX: Towards Long-Horizon Reasoning in Low-Resource Reward Regimes
-
-TREX is a reinforcement learning algorithm for solving AC (Andrews-Curtis) problems, combining Active Symbolic Closure (ASC) for feasibility constraints with Topological Neuro-Symbolic Compression (TNSC) for guided exploration.
+# SAGE: Mitigating Long-Horizon Reasoning Biases via Topological Structural Guidance
 
 ## Project Structure
 
