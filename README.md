@@ -3,7 +3,7 @@
 ## Project Structure
 
 ```
-trex/
+sage/
 ├── train.py          # Main training entry point
 ├── training.py       # SAGE training loop
 ├── policy.py         # SAGEPolicy (actor-critic)
@@ -23,13 +23,13 @@ trex/
 ### Training
 
 ```bash
-python -m trex.train --use-sage
+python -m sage.train --use-sage
 ```
 
 ### Full Training Example
 
 ```bash
-python -m trex.train \
+python -m sage.train \
     --use-sage \
     --sage-lambda 1.5 \
     --sage-width-coef 1.0 \
@@ -44,7 +44,7 @@ python -m trex.train \
 ### Evaluation
 
 ```bash
-python -m trex.eval.evaluate \
+python -m sage.eval.evaluate \
     --checkpoint_path out/sage_checkpoint.pt \
     --num_episodes 100 \
     --use_sage_guidance

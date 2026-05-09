@@ -14,7 +14,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from trex.guidance import (
+from sage.guidance import (
     build_trivial_targets,
     sage_validity_and_potentials_batch,
 )

@@ -14,9 +14,9 @@ from tqdm import tqdm
 import numpy as np
 import torch
 
-from trex.policy import SAGEPolicy
-from trex.env_setup import get_env
-from trex.eval.utils import set_seed, save_json, save_jsonl
+from sage.policy import SAGEPolicy
+from sage.env_setup import get_env
+from sage.eval.utils import set_seed, save_json, save_jsonl
 
 
 def parse_args():
@@ -72,10 +72,8 @@ def parse_args():
     
     # SAGE-specific evaluation settings
     parser.add_argument(
-        "--use_sage_guidance",
         "--use-sage-guidance",
-        "--use-trex-guidance",
-        "--use_trex_guidance",
+        "--use_sage_guidance",
         type=lambda x: bool(strtobool(x)),
         dest="use_sage_guidance",
         default=True,
@@ -142,7 +140,7 @@ def load_checkpoint(checkpoint_path: str, device: torch.device):
     # Create a minimal environment to get observation/action spaces
     # Use a simple trivial state for initialization
     import numpy as np
-    from trex.ac_solver.envs.ac_env import ACEnv, ACEnvConfig
+    from sage.ac_solver.envs.ac_env import ACEnv, ACEnvConfig
     
     dummy_state = np.array([1, 0, 2, 0])  # Trivial state <x, y>
     env_config = ACEnvConfig(
@@ -193,7 +191,7 @@ def evaluate_single_episode(
         trajectory: list, sequence of actions (if save_trajectories)
         final_state: np.ndarray, final presentation state
     """
-    from trex.guidance import build_trivial_targets, sage_validity_and_potentials_batch
+    from sage.guidance import build_trivial_targets, sage_validity_and_potentials_batch
     
     obs = torch.tensor(initial_state, dtype=torch.float32).to(device)
     env.reset(options={"starting_state": initial_state})
@@ -281,7 +279,7 @@ def evaluate_sage(
         results: list of evaluation results
         metrics: dict of aggregated metrics
     """
-    from trex.ac_solver.envs.ac_env import ACEnv, ACEnvConfig
+    from sage.ac_solver.envs.ac_env import ACEnv, ACEnvConfig
     
     results = []
     num_solved = 0
@@ -372,7 +370,7 @@ def run_evaluation(args):
         config_args.max_rew = 1000
     
     # Load initial states
-    from trex.utils import load_initial_states_from_text_file
+    from sage.utils import load_initial_states_from_text_file
     
     initial_states = load_initial_states_from_text_file(states_type=args.states_type)
     

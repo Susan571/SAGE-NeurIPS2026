@@ -56,7 +56,6 @@ def parse_args():
     # SAGE-specific arguments (guidance and reward shaping)
     parser.add_argument(
         "--use-sage",
-        "--use-trex",
         type=lambda x: bool(strtobool(x)),
         dest="use_sage",
         default=False,
@@ -66,7 +65,6 @@ def parse_args():
     )
     parser.add_argument(
         "--sage-lambda",
-        "--trex-lambda",
         type=float,
         dest="sage_lambda",
         default=1.0,
@@ -74,7 +72,6 @@ def parse_args():
     )
     parser.add_argument(
         "--sage-width-coef",
-        "--trex-width-coef",
         type=float,
         dest="sage_width_coef",
         default=1.0,
@@ -82,7 +79,6 @@ def parse_args():
     )
     parser.add_argument(
         "--sage-depth-coef",
-        "--trex-depth-coef",
         type=float,
         dest="sage_depth_coef",
         default=1.0,
@@ -90,7 +86,6 @@ def parse_args():
     )
     parser.add_argument(
         "--sage-beta-valid",
-        "--trex-beta-valid",
         type=float,
         dest="sage_beta_valid",
         default=0.0,
@@ -98,7 +93,6 @@ def parse_args():
     )
     parser.add_argument(
         "--sage-group-adv",
-        "--trex-group-adv",
         type=lambda x: bool(strtobool(x)),
         dest="sage_group_adv",
         default=False,
