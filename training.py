@@ -122,7 +122,7 @@ def sage_training_loop(
     max_relator_length = envs.envs[0].max_relator_length
     trivial_targets = build_trivial_targets(max_relator_length=max_relator_length)
 
-    run_name = f"{args.exp_name}_sage-ffn-node-counts_{args.nodes_counts}_{uuid.uuid4()}"
+    run_name = f"{args.exp_name}_sage-ffn-nodes-counts_{args.nodes_counts}_{uuid.uuid4()}"
     out_dir = f"out/{run_name}"
     makedirs(out_dir, exist_ok=True)
     if args.wandb_log:
