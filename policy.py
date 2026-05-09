@@ -72,7 +72,7 @@ class SAGEPolicy(nn.Module):
         action=None,
         valid_action_mask=None,
         psi_total=None,
-        trex_lambda=1.0,
+        sage_lambda=1.0,
     ):
         logits = self.actor(x)
         value = self.critic(x)
@@ -94,7 +94,7 @@ class SAGEPolicy(nn.Module):
 
             logits = logits.clone()
             logits[~valid_mask_tensor] = float("-inf")
-            logits = logits + trex_lambda * psi_tensor
+            logits = logits + sage_lambda * psi_tensor
 
         probs = Categorical(logits=logits)
 
@@ -102,4 +102,3 @@ class SAGEPolicy(nn.Module):
             action = probs.sample()
 
         return action, probs.log_prob(action), probs.entropy(), value
-

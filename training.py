@@ -16,7 +16,7 @@ from torch import nn
 
 from trex.guidance import (
     build_trivial_targets,
-    trex_validity_and_potentials_batch,
+    sage_validity_and_potentials_batch,
 )
 
 
@@ -70,7 +70,7 @@ def get_curr_lr(n_update, lr_decay, warmup, max_lr, min_lr, total_updates):
     return lrnow
 
 
-def trex_training_loop(
+def sage_training_loop(
     envs,
     args,
     device,
@@ -122,7 +122,7 @@ def trex_training_loop(
     max_relator_length = envs.envs[0].max_relator_length
     trivial_targets = build_trivial_targets(max_relator_length=max_relator_length)
 
-    run_name = f"{args.exp_name}_trex-ffn-nodes_{args.nodes_counts}_{uuid.uuid4()}"
+    run_name = f"{args.exp_name}_sage-ffn-nodes_{args.nodes_counts}_{uuid.uuid4()}"
     out_dir = f"out/{run_name}"
     makedirs(out_dir, exist_ok=True)
     if args.wandb_log:
@@ -163,11 +163,11 @@ def trex_training_loop(
 
             # Compute SAGE validity masks and potentials
             obs_np = next_obs.cpu().numpy()
-            valid_masks, psi_totals = trex_validity_and_potentials_batch(
+            valid_masks, psi_totals = sage_validity_and_potentials_batch(
                 states=obs_np,
                 trivial_targets=trivial_targets,
-                lambda_width=args.trex_width_coef,
-                lambda_depth=args.trex_depth_coef,
+                lambda_width=args.sage_width_coef,
+                lambda_depth=args.sage_depth_coef,
             )
 
             # Sample actions with SAGE guidance
@@ -176,7 +176,7 @@ def trex_training_loop(
                     next_obs,
                     valid_action_mask=valid_masks,
                     psi_total=psi_totals,
-                    trex_lambda=args.trex_lambda,
+                    sage_lambda=args.sage_lambda,
                 )
                 values[step] = value.flatten()
             actions[step] = action
@@ -205,14 +205,14 @@ def trex_training_loop(
 
             # Hybrid reward: R(τ) = 1[τ ∈ T*] + β * Σ_t 1[Valid_S(·) = ⊤]
             # Accumulate valid transitions until first violation, then add reward
-            if args.trex_beta_valid > 0:
+            if args.sage_beta_valid > 0:
                 # Check for environments that violated or ended
                 for i in range(args.num_envs):
                     # Add cumulative reward when violation occurs or episode ends
                     if violation_occurred[i] or done[i] or truncated[i]:
                         # Add cumulative reward for valid transitions until violation/end
                         if cumulative_valid[i] > 0:
-                            reward[i] += args.trex_beta_valid * cumulative_valid[i]
+                            reward[i] += args.sage_beta_valid * cumulative_valid[i]
                         # Reset for next trajectory
                         cumulative_valid[i] = 0.0
                         violation_occurred[i] = False
@@ -321,7 +321,7 @@ def trex_training_loop(
             returns = advantages + values
 
         # Group-relative advantage normalization (SAGE-style)
-        if args.trex_group_adv:
+        if args.sage_group_adv:
             # Normalize advantages within each trajectory/episode
             episode_ids = torch.zeros((args.num_steps, args.num_envs), dtype=torch.long).to(device)
             episode_counter = 0
@@ -382,7 +382,7 @@ def trex_training_loop(
                     ]
 
                 mb_advantages = b_advantages[mb_inds]
-                if args.norm_adv and not args.trex_group_adv:
+                if args.norm_adv and not args.sage_group_adv:
                     mb_advantages = (mb_advantages - mb_advantages.mean()) / (
                         mb_advantages.std() + 1e-8
                     )
@@ -455,8 +455,8 @@ def trex_training_loop(
                     "losses/approx_kl": approx_kl.item(),
                     "losses/explained_variance": explained_var,
                     "losses/clipfrac": np.mean(clipfracs),
-                    "trex/beta": beta,
-                    "trex/valid_transitions_mean": b_valid_transitions.mean().item(),
+                    "sage/beta": beta,
+                    "sage/valid_transitions_mean": b_valid_transitions.mean().item(),
                     "debug/advantages_mean": b_advantages.mean(),
                     "debug/advantages_std": b_advantages.std(),
                 }
@@ -484,7 +484,7 @@ def trex_training_loop(
                 "states_processed": states_processed,
                 "ACMoves_hist": ACMoves_hist,
                 "supermoves": envs.envs[0].supermoves,
-                "trex_beta": beta,
+                "sage_beta": beta,
             }
             print(f"saving SAGE checkpoint to {out_dir}")
             torch.save(checkpoint, join(out_dir, "ckpt.pt"))

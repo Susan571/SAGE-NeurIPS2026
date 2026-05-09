@@ -23,19 +23,19 @@ trex/
 ### Training
 
 ```bash
-python -m trex.train --use-trex
+python -m trex.train --use-sage
 ```
 
 ### Full Training Example
 
 ```bash
 python -m trex.train \
-    --use-trex \
-    --trex-lambda 1.5 \
-    --trex-width-coef 1.0 \
-    --trex-depth-coef 1.0 \
-    --trex-beta-valid 0.1 \
-    --trex-group-adv \
+    --use-sage \
+    --sage-lambda 1.5 \
+    --sage-width-coef 1.0 \
+    --sage-depth-coef 1.0 \
+    --sage-beta-valid 0.1 \
+    --sage-group-adv \
     --num-envs 8 \
     --total-timesteps 1000000 \
     --wandb-log
@@ -45,20 +45,20 @@ python -m trex.train \
 
 ```bash
 python -m trex.eval.evaluate \
-    --checkpoint_path out/trex_checkpoint.pt \
+    --checkpoint_path out/sage_checkpoint.pt \
     --num_episodes 100 \
-    --use_trex_guidance
+    --use_sage_guidance
 ```
 
 ## Key Arguments
 
 ### SAGE-Specific
-- `--use-trex`: Enable SAGE features
-- `--trex-lambda`: Global scale λ for topological potential (default: 1.0)
-- `--trex-width-coef`: Weight for width potential Ψ_P (default: 1.0)
-- `--trex-depth-coef`: Weight for depth potential Ψ_H (default: 1.0)
-- `--trex-beta-valid`: Coefficient β for weak process reward (default: 0.0)
-- `--trex-group-adv`: Enable group-relative advantage normalization
+- `--use-sage`: Enable SAGE features
+- `--sage-lambda`: Global scale λ for topological potential (default: 1.0)
+- `--sage-width-coef`: Weight for width potential Ψ_P (default: 1.0)
+- `--sage-depth-coef`: Weight for depth potential Ψ_H (default: 1.0)
+- `--sage-beta-valid`: Coefficient β for weak process reward (default: 0.0)
+- `--sage-group-adv`: Enable group-relative advantage normalization
 
 ### Standard RL
 - `--num-envs`: Number of parallel environments (default: 4)

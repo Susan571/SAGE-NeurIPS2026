@@ -4,7 +4,7 @@
 
 set -e
 
-CHECKPOINT_PATH=${1:-"out/trex_checkpoint.pt"}
+CHECKPOINT_PATH=${1:-"out/sage_checkpoint.pt"}
 OUTPUT_DIR=${2:-"./eval_outputs"}
 NUM_EPISODES=${3:-100}
 STATES_TYPE=${4:-"all"}
@@ -22,7 +22,7 @@ python -m trex.eval.evaluate \
     --output_dir "$OUTPUT_DIR" \
     --num_episodes "$NUM_EPISODES" \
     --states_type "$STATES_TYPE" \
-    --use_trex_guidance \
+    --use_sage_guidance \
     --save_trajectories \
     --save_failed \
     --seed 42

@@ -8,11 +8,11 @@ This module provides evaluation scripts for SAGE models on AC problems, followin
 
 ```bash
 python -m trex.eval.evaluate \
-    --checkpoint_path out/trex_checkpoint.pt \
+    --checkpoint_path out/sage_checkpoint.pt \
     --output_dir ./eval_outputs \
     --num_episodes 100 \
     --states_type all \
-    --use_trex_guidance \
+    --use_sage_guidance \
     --save_trajectories
 ```
 
@@ -59,7 +59,7 @@ Each line contains:
   "min_path_length": 12,
   "max_path_length": 156,
   "path_lengths": [12, 15, 23, ...],
-  "checkpoint_path": "out/trex_checkpoint.pt",
+  "checkpoint_path": "out/sage_checkpoint.pt",
   "checkpoint_metadata": {...},
   "eval_config": {...}
 }

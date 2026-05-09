@@ -10,6 +10,6 @@ This module implements the SAGE algorithm for AC problem solving, including:
 """
 
 from trex.policy import SAGEPolicy
-from trex.train import train_trex
+from trex.train import train_sage
 
-__all__ = ["SAGEPolicy", "train_trex"]
+__all__ = ["SAGEPolicy", "train_sage"]

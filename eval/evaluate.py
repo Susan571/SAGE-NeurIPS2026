@@ -72,8 +72,10 @@ def parse_args():
     
     # SAGE-specific evaluation settings
     parser.add_argument(
+        "--use_sage_guidance",
         "--use_trex_guidance",
         type=lambda x: bool(strtobool(x)),
+        dest="use_sage_guidance",
         default=True,
         nargs="?",
         const=True,
@@ -176,7 +178,7 @@ def evaluate_single_episode(
     env,
     initial_state,
     max_steps,
-    use_trex_guidance,
+    use_sage_guidance,
     device,
     deterministic=False,
 ):
@@ -189,7 +191,7 @@ def evaluate_single_episode(
         trajectory: list, sequence of actions (if save_trajectories)
         final_state: np.ndarray, final presentation state
     """
-    from trex.guidance import build_trivial_targets, trex_validity_and_potentials_batch
+    from trex.guidance import build_trivial_targets, sage_validity_and_potentials_batch
     
     obs = torch.tensor(initial_state, dtype=torch.float32).to(device)
     env.reset(options={"starting_state": initial_state})
@@ -200,7 +202,7 @@ def evaluate_single_episode(
     step_count = 0
     
     # Precompute trivial targets for SAGE guidance
-    if use_trex_guidance:
+    if use_sage_guidance:
         max_relator_length = env.max_relator_length
         trivial_targets = build_trivial_targets(max_relator_length=max_relator_length)
     
@@ -209,9 +211,9 @@ def evaluate_single_episode(
         valid_mask = None
         psi_total = None
         
-        if use_trex_guidance:
+        if use_sage_guidance:
             obs_np = obs.cpu().numpy().reshape(1, -1)
-            valid_masks, psi_totals = trex_validity_and_potentials_batch(
+            valid_masks, psi_totals = sage_validity_and_potentials_batch(
                 states=obs_np,
                 trivial_targets=trivial_targets,
                 lambda_width=1.0,
@@ -235,7 +237,7 @@ def evaluate_single_episode(
                     obs,
                     valid_action_mask=valid_mask,
                     psi_total=psi_total,
-                    trex_lambda=1.0 if use_trex_guidance else 0.0,
+                    sage_lambda=1.0 if use_sage_guidance else 0.0,
                 )
         
         action_np = action.cpu().numpy()[0]
@@ -262,12 +264,12 @@ def evaluate_single_episode(
     }
 
 
-def evaluate_trex(
+def evaluate_sage(
     policy,
     initial_states,
     args,
     device,
-    use_trex_guidance=True,
+    use_sage_guidance=True,
     deterministic=False,
 ):
     """
@@ -306,7 +308,7 @@ def evaluate_trex(
             env=env,
             initial_state=initial_state,
             max_steps=getattr(args, "max_steps", args.horizon_length),
-            use_trex_guidance=use_trex_guidance,
+            use_sage_guidance=use_sage_guidance,
             device=device,
             deterministic=deterministic,
         )
@@ -379,12 +381,12 @@ def run_evaluation(args):
     print(f"Evaluating on {len(initial_states)} problems")
     
     # Run evaluation
-    results, metrics = evaluate_trex(
+    results, metrics = evaluate_sage(
         policy=policy,
         initial_states=initial_states,
         args=config_args,
         device=device,
-        use_trex_guidance=args.use_trex_guidance,
+        use_sage_guidance=args.use_sage_guidance,
         deterministic=args.eval_deterministic,
     )
     

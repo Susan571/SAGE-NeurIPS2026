@@ -31,7 +31,7 @@ def build_trivial_targets(max_relator_length: int) -> np.ndarray:
     return generate_trivial_states(max_relator_length=max_relator_length)
 
 
-def trex_validity_and_potentials_for_state(
+def sage_validity_and_potentials_for_state(
     state: np.ndarray,
     trivial_targets: np.ndarray,
     lambda_width: float = 1.0,
@@ -106,14 +106,14 @@ def trex_validity_and_potentials_for_state(
     return valid_mask, psi_total.astype(np.float32)
 
 
-def trex_validity_and_potentials_batch(
+def sage_validity_and_potentials_batch(
     states: np.ndarray,
     trivial_targets: np.ndarray,
     lambda_width: float = 1.0,
     lambda_depth: float = 1.0,
 ):
     """
-    Vectorised wrapper over `trex_validity_and_potentials_for_state` for a batch
+    Vectorised wrapper over `sage_validity_and_potentials_for_state` for a batch
     of AC presentations with the same max_relator_length.
 
     Args:
@@ -129,7 +129,7 @@ def trex_validity_and_potentials_batch(
     psi_totals = np.zeros((batch_size, num_actions), dtype=np.float32)
 
     for i in range(batch_size):
-        vm, psi = trex_validity_and_potentials_for_state(
+        vm, psi = sage_validity_and_potentials_for_state(
             state=states[i],
             trivial_targets=trivial_targets,
             lambda_width=lambda_width,
