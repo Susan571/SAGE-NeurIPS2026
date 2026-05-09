@@ -1,5 +1,5 @@
 """
-SAGE (Topologically-guided Reinforcement Learning with EXploration) module.
+SAGE module.
 
 This module implements the SAGE algorithm for AC problem solving, including:
 - ASC: Active Symbolic Closure (validity masking)
