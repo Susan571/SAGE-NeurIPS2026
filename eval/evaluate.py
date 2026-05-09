@@ -73,6 +73,8 @@ def parse_args():
     # SAGE-specific evaluation settings
     parser.add_argument(
         "--use_sage_guidance",
+        "--use-sage-guidance",
+        "--use-trex-guidance",
         "--use_trex_guidance",
         type=lambda x: bool(strtobool(x)),
         dest="use_sage_guidance",
