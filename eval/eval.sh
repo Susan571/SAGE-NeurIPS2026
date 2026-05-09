@@ -1,5 +1,5 @@
 #!/bin/bash
-# TREX evaluation script
+# SAGE evaluation script
 # Usage: bash eval.sh <checkpoint_path> [output_dir] [num_episodes]
 
 set -e
@@ -9,7 +9,7 @@ OUTPUT_DIR=${2:-"./eval_outputs"}
 NUM_EPISODES=${3:-100}
 STATES_TYPE=${4:-"all"}
 
-echo "TREX Evaluation"
+echo "SAGE Evaluation"
 echo "==============="
 echo "Checkpoint: $CHECKPOINT_PATH"
 echo "Output dir: $OUTPUT_DIR"

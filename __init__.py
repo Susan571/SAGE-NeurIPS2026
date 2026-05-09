@@ -1,15 +1,15 @@
 """
-TREX (Topologically-guided Reinforcement Learning with EXploration) module.
+SAGE (Topologically-guided Reinforcement Learning with EXploration) module.
 
-This module implements the TREX algorithm for AC problem solving, including:
+This module implements the SAGE algorithm for AC problem solving, including:
 - ASC: Active Symbolic Closure (validity masking)
 - TNSC: Topological Neuro-Symbolic Compression (potentials)
 - Topologically Guided Sampling
 - Hybrid Reward shaping
-- TREX-style PPO updates
+- SAGE-style PPO updates
 """
 
-from trex.policy import TREXPolicy
+from trex.policy import SAGEPolicy
 from trex.train import train_trex
 
-__all__ = ["TREXPolicy", "train_trex"]
+__all__ = ["SAGEPolicy", "train_trex"]

@@ -1,8 +1,8 @@
 """
-This file trains TREX on AC Environment.
-It sets up the training environment, initializes the TREXPolicy, and runs the TREX training loop.
+This file trains SAGE on AC Environment.
+It sets up the training environment, initializes the SAGEPolicy, and runs the SAGE training loop.
 
-Run this script directly to start training TREX:
+Run this script directly to start training SAGE:
 
 ```
 python -m trex.train --use-trex
@@ -15,7 +15,7 @@ import numpy as np
 import torch
 import random
 from torch.optim import Adam
-from trex.policy import TREXPolicy
+from trex.policy import SAGEPolicy
 from trex.config import parse_args
 from trex.env_setup import get_env
 from trex.training import trex_training_loop
@@ -23,14 +23,14 @@ from trex.training import trex_training_loop
 
 def train_trex():
     """
-    Main training function for TREX algorithm.
+    Main training function for SAGE algorithm.
     """
     args = parse_args()
     
-    # Ensure TREX is enabled
+    # Ensure SAGE is enabled
     if not args.use_trex:
-        print("Warning: --use-trex is False. TREX features will be limited.")
-        print("Consider running with --use-trex flag for full TREX functionality.")
+        print("Warning: --use-trex is False. SAGE features will be limited.")
+        print("Consider running with --use-trex flag for full SAGE functionality.")
 
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -48,7 +48,7 @@ def train_trex():
         states_processed,
     ) = get_env(args)
 
-    policy = TREXPolicy(envs, args.nodes_counts).to(device)
+    policy = SAGEPolicy(envs, args.nodes_counts).to(device)
     optimizer = Adam(policy.parameters(), lr=args.learning_rate, eps=args.epsilon)
 
     trex_training_loop(

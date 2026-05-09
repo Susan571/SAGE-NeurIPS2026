@@ -1,5 +1,5 @@
 """
-TREX guidance utilities for ASC validity masking and TNSC topological potentials.
+SAGE guidance utilities for ASC validity masking and TNSC topological potentials.
 """
 
 import numpy as np

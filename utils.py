@@ -1,5 +1,5 @@
 """
-Helper functions for TREX training.
+Helper functions for SAGE training.
 """
 
 from importlib import resources

@@ -53,38 +53,38 @@ def parse_args():
         help="the entity (team) of wandb's project",
     )
 
-    # TREX-specific arguments (guidance and reward shaping)
+    # SAGE-specific arguments (guidance and reward shaping)
     parser.add_argument(
         "--use-trex",
         type=lambda x: bool(strtobool(x)),
         default=False,
         nargs="?",
         const=True,
-        help="if toggled, use TREX-style guided sampling and (optional) reward shaping",
+        help="if toggled, use SAGE-style guided sampling and (optional) reward shaping",
     )
     parser.add_argument(
         "--trex-lambda",
         type=float,
         default=1.0,
-        help="global scale λ for TREX topological potential added to logits",
+        help="global scale λ for SAGE topological potential added to logits",
     )
     parser.add_argument(
         "--trex-width-coef",
         type=float,
         default=1.0,
-        help="relative weight for width potential Ψ_P in TREX guidance",
+        help="relative weight for width potential Ψ_P in SAGE guidance",
     )
     parser.add_argument(
         "--trex-depth-coef",
         type=float,
         default=1.0,
-        help="relative weight for depth potential Ψ_H in TREX guidance",
+        help="relative weight for depth potential Ψ_H in SAGE guidance",
     )
     parser.add_argument(
         "--trex-beta-valid",
         type=float,
         default=0.0,
-        help="coefficient β for weak process reward based on TREX local validity signal",
+        help="coefficient β for weak process reward based on SAGE local validity signal",
     )
     parser.add_argument(
         "--trex-group-adv",

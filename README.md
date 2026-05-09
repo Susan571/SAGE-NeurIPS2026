@@ -5,8 +5,8 @@
 ```
 trex/
 ├── train.py          # Main training entry point
-├── training.py       # TREX training loop
-├── policy.py         # TREXPolicy (actor-critic)
+├── training.py       # SAGE training loop
+├── policy.py         # SAGEPolicy (actor-critic)
 ├── guidance.py       # ASC validity masking + TNSC potentials
 ├── config.py         # Command-line arguments
 ├── env_setup.py      # Environment initialization
@@ -52,8 +52,8 @@ python -m trex.eval.evaluate \
 
 ## Key Arguments
 
-### TREX-Specific
-- `--use-trex`: Enable TREX features
+### SAGE-Specific
+- `--use-trex`: Enable SAGE features
 - `--trex-lambda`: Global scale λ for topological potential (default: 1.0)
 - `--trex-width-coef`: Weight for width potential Ψ_P (default: 1.0)
 - `--trex-depth-coef`: Weight for depth potential Ψ_H (default: 1.0)

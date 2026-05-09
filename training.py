@@ -1,5 +1,5 @@
 """
-TREX training loop implementing ASC, TNSC, guided sampling, hybrid rewards, and TREX-style PPO updates.
+SAGE training loop implementing ASC, TNSC, guided sampling, hybrid rewards, and SAGE-style PPO updates.
 """
 
 import math
@@ -83,12 +83,12 @@ def trex_training_loop(
     initial_states,
 ):
     """
-    TREX training loop implementing:
+    SAGE training loop implementing:
     - ASC: Active Symbolic Closure (validity masking)
     - TNSC: Topological Neuro-Symbolic Compression (potentials)
     - Topologically Guided Sampling
     - Hybrid Reward (terminal + weak process reward)
-    - TREX-style PPO update with KL penalty
+    - SAGE-style PPO update with KL penalty
     """
     obs = torch.zeros(
         (args.num_steps, args.num_envs) + envs.single_observation_space.shape
@@ -116,7 +116,7 @@ def trex_training_loop(
     returns_queue = deque([0], maxlen=100)
     lengths_queue = deque([0], maxlen=100)
     round1_complete = False
-    beta = args.beta  # TREX uses KL penalty by default
+    beta = args.beta  # SAGE uses KL penalty by default
 
     # Precompute trivial targets for depth potential Ψ_H
     max_relator_length = envs.envs[0].max_relator_length
@@ -135,7 +135,7 @@ def trex_training_loop(
 
     print(f"total number of timesteps: {args.total_timesteps}, updates: {num_updates}")
     for update in tqdm(
-        range(1, num_updates + 1), desc="TREX Training Progress", total=num_updates
+        range(1, num_updates + 1), desc="SAGE Training Progress", total=num_updates
     ):
 
         random.seed(args.seed + update)
@@ -153,15 +153,15 @@ def trex_training_loop(
             )
             optimizer.param_groups[0]["lr"] = lrnow
 
-        # Rollout phase with TREX guidance
+        # Rollout phase with SAGE guidance
         for step in tqdm(
-            range(0, args.num_steps), desc=f"TREX Rollout - {update}", leave=False
+            range(0, args.num_steps), desc=f"SAGE Rollout - {update}", leave=False
         ):
             global_step += 1 * args.num_envs
             obs[step] = next_obs
             dones[step] = next_done
 
-            # Compute TREX validity masks and potentials
+            # Compute SAGE validity masks and potentials
             obs_np = next_obs.cpu().numpy()
             valid_masks, psi_totals = trex_validity_and_potentials_batch(
                 states=obs_np,
@@ -170,7 +170,7 @@ def trex_training_loop(
                 lambda_depth=args.trex_depth_coef,
             )
 
-            # Sample actions with TREX guidance
+            # Sample actions with SAGE guidance
             with torch.no_grad():
                 action, logprob, _, value = policy.get_action_and_value(
                     next_obs,
@@ -320,7 +320,7 @@ def trex_training_loop(
                 )
             returns = advantages + values
 
-        # Group-relative advantage normalization (TREX-style)
+        # Group-relative advantage normalization (SAGE-style)
         if args.trex_group_adv:
             # Normalize advantages within each trajectory/episode
             episode_ids = torch.zeros((args.num_steps, args.num_envs), dtype=torch.long).to(device)
@@ -356,7 +356,7 @@ def trex_training_loop(
         b_values = values.reshape(-1)
         b_valid_transitions = valid_transitions.reshape(-1)
 
-        # TREX-style PPO update with KL penalty
+        # SAGE-style PPO update with KL penalty
         b_inds = np.arange(args.batch_size)
         clipfracs = []
 
@@ -387,7 +387,7 @@ def trex_training_loop(
                         mb_advantages.std() + 1e-8
                     )
 
-                # TREX policy loss: PPO clip + KL penalty
+                # SAGE policy loss: PPO clip + KL penalty
                 pg_loss1 = -mb_advantages * ratio
                 pg_loss2 = -mb_advantages * torch.clamp(
                     ratio, 1 - args.clip_coef, 1 + args.clip_coef
@@ -486,7 +486,7 @@ def trex_training_loop(
                 "supermoves": envs.envs[0].supermoves,
                 "trex_beta": beta,
             }
-            print(f"saving TREX checkpoint to {out_dir}")
+            print(f"saving SAGE checkpoint to {out_dir}")
             torch.save(checkpoint, join(out_dir, "ckpt.pt"))
 
     return

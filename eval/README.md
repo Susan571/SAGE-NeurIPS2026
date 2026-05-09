@@ -1,6 +1,6 @@
-# TREX Evaluation
+# SAGE Evaluation
 
-This module provides evaluation scripts for TREX models on AC problems, following the structure of EMPO-main/eval_math.
+This module provides evaluation scripts for SAGE models on AC problems, following the structure of EMPO-main/eval_math.
 
 ## Quick Start
 
@@ -24,8 +24,8 @@ bash trex/eval/eval.sh <checkpoint_path> [output_dir] [num_episodes] [states_typ
 
 ## Evaluation Features
 
-- **Checkpoint Loading**: Loads trained TREX checkpoints with full configuration
-- **TREX Guidance**: Optionally uses TREX validity masking and topological potentials during evaluation
+- **Checkpoint Loading**: Loads trained SAGE checkpoints with full configuration
+- **SAGE Guidance**: Optionally uses SAGE validity masking and topological potentials during evaluation
 - **Deterministic Mode**: Greedy action selection for reproducible results
 - **Trajectory Saving**: Save full action sequences for analysis
 - **Failed Case Analysis**: Optionally save failed problems for debugging
@@ -67,7 +67,7 @@ Each line contains:
 
 ## Comparison with Baselines
 
-To compare TREX with classical search algorithms:
+To compare SAGE with classical search algorithms:
 
 1. **BFS**: Use `ac_solver/search/breadth_first.py`
 2. **Greedy**: Use `ac_solver/search/greedy.py`
