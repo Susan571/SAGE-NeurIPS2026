@@ -1,6 +1,6 @@
 """
-This file contains TREXPolicy which implements actor and critic networks
-with TREX-style topological guidance (ASC validity masking + TNSC potentials).
+This file contains SAGEPolicy which implements actor and critic networks
+with SAGE-style topological guidance (ASC validity masking + TNSC potentials).
 """
 
 import numpy as np
@@ -48,9 +48,9 @@ def build_network(nodes_counts, std=0.01):
     return layers
 
 
-class TREXPolicy(nn.Module):
+class SAGEPolicy(nn.Module):
     """
-    Actor-critic policy/value model for TREX, with optional guided sampling inputs.
+    Actor-critic policy/value model for SAGE, with optional guided sampling inputs.
     """
 
     def __init__(self, envs, nodes_counts):
@@ -72,12 +72,12 @@ class TREXPolicy(nn.Module):
         action=None,
         valid_action_mask=None,
         psi_total=None,
-        trex_lambda=1.0,
+        sage_lambda=1.0,
     ):
         logits = self.actor(x)
         value = self.critic(x)
 
-        # Apply TREX guidance if provided
+        # Apply SAGE guidance if provided
         if valid_action_mask is not None and psi_total is not None:
             # Convert to tensors if needed and ensure correct device/dtype
             if not isinstance(valid_action_mask, torch.Tensor):
@@ -94,7 +94,7 @@ class TREXPolicy(nn.Module):
 
             logits = logits.clone()
             logits[~valid_mask_tensor] = float("-inf")
-            logits = logits + trex_lambda * psi_tensor
+            logits = logits + sage_lambda * psi_tensor
 
         probs = Categorical(logits=logits)
 
@@ -102,4 +102,3 @@ class TREXPolicy(nn.Module):
             action = probs.sample()
 
         return action, probs.log_prob(action), probs.entropy(), value
-

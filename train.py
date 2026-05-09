@@ -1,11 +1,11 @@
 """
-This file trains TREX on AC Environment.
-It sets up the training environment, initializes the TREXPolicy, and runs the TREX training loop.
+This file trains SAGE on AC Environment.
+It sets up the training environment, initializes the SAGEPolicy, and runs the SAGE training loop.
 
-Run this script directly to start training TREX:
+Run this script directly to start training SAGE:
 
 ```
-python -m trex.train --use-trex
+python -m trex.train --use-sage
 ```
 
 To see the entire list of command line arguments you may pass, check args.py
@@ -15,22 +15,22 @@ import numpy as np
 import torch
 import random
 from torch.optim import Adam
-from trex.policy import TREXPolicy
+from trex.policy import SAGEPolicy
 from trex.config import parse_args
 from trex.env_setup import get_env
-from trex.training import trex_training_loop
+from trex.training import sage_training_loop
 
 
-def train_trex():
+def train_sage():
     """
-    Main training function for TREX algorithm.
+    Main training function for SAGE algorithm.
     """
     args = parse_args()
     
-    # Ensure TREX is enabled
-    if not args.use_trex:
-        print("Warning: --use-trex is False. TREX features will be limited.")
-        print("Consider running with --use-trex flag for full TREX functionality.")
+    # Ensure SAGE is enabled
+    if not args.use_sage:
+        print("Warning: --use-sage is False. SAGE features will be limited.")
+        print("Consider running with --use-sage flag for full SAGE functionality.")
 
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -48,10 +48,10 @@ def train_trex():
         states_processed,
     ) = get_env(args)
 
-    policy = TREXPolicy(envs, args.nodes_counts).to(device)
+    policy = SAGEPolicy(envs, args.nodes_counts).to(device)
     optimizer = Adam(policy.parameters(), lr=args.learning_rate, eps=args.epsilon)
 
-    trex_training_loop(
+    sage_training_loop(
         envs,
         args,
         device,
@@ -68,4 +68,4 @@ def train_trex():
 
 
 if __name__ == "__main__":
-    train_trex()
+    train_sage()

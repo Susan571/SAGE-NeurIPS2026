@@ -1,5 +1,5 @@
 """
-Utility functions for TREX evaluation.
+Utility functions for SAGE evaluation.
 """
 
 import json

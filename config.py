@@ -1,5 +1,5 @@
 """
-Command-line argument parsing for TREX training.
+Command-line argument parsing for SAGE training.
 """
 
 import argparse
@@ -53,42 +53,54 @@ def parse_args():
         help="the entity (team) of wandb's project",
     )
 
-    # TREX-specific arguments (guidance and reward shaping)
+    # SAGE-specific arguments (guidance and reward shaping)
     parser.add_argument(
+        "--use-sage",
         "--use-trex",
         type=lambda x: bool(strtobool(x)),
+        dest="use_sage",
         default=False,
         nargs="?",
         const=True,
-        help="if toggled, use TREX-style guided sampling and (optional) reward shaping",
+        help="if toggled, use SAGE-style guided sampling and (optional) reward shaping",
     )
     parser.add_argument(
+        "--sage-lambda",
         "--trex-lambda",
         type=float,
+        dest="sage_lambda",
         default=1.0,
-        help="global scale λ for TREX topological potential added to logits",
+        help="global scale λ for SAGE topological potential added to logits",
     )
     parser.add_argument(
+        "--sage-width-coef",
         "--trex-width-coef",
         type=float,
+        dest="sage_width_coef",
         default=1.0,
-        help="relative weight for width potential Ψ_P in TREX guidance",
+        help="relative weight for width potential Ψ_P in SAGE guidance",
     )
     parser.add_argument(
+        "--sage-depth-coef",
         "--trex-depth-coef",
         type=float,
+        dest="sage_depth_coef",
         default=1.0,
-        help="relative weight for depth potential Ψ_H in TREX guidance",
+        help="relative weight for depth potential Ψ_H in SAGE guidance",
     )
     parser.add_argument(
+        "--sage-beta-valid",
         "--trex-beta-valid",
         type=float,
+        dest="sage_beta_valid",
         default=0.0,
-        help="coefficient β for weak process reward based on TREX local validity signal",
+        help="coefficient β for weak process reward based on SAGE local validity signal",
     )
     parser.add_argument(
+        "--sage-group-adv",
         "--trex-group-adv",
         type=lambda x: bool(strtobool(x)),
+        dest="sage_group_adv",
         default=False,
         nargs="?",
         const=True,

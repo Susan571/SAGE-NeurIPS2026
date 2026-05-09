@@ -1,5 +1,5 @@
 """
-TREX evaluation script for AC problem solving.
+SAGE evaluation script for AC problem solving.
 
 Follows the structure of EMPO-main/eval_math for consistency.
 """
@@ -14,21 +14,21 @@ from tqdm import tqdm
 import numpy as np
 import torch
 
-from trex.policy import TREXPolicy
+from trex.policy import SAGEPolicy
 from trex.env_setup import get_env
 from trex.eval.utils import set_seed, save_json, save_jsonl
 
 
 def parse_args():
     """Parse command-line arguments for evaluation."""
-    parser = argparse.ArgumentParser(description="Evaluate TREX on AC problems")
+    parser = argparse.ArgumentParser(description="Evaluate SAGE on AC problems")
     
     # Checkpoint and model
     parser.add_argument(
         "--checkpoint_path",
         type=str,
         required=True,
-        help="Path to TREX checkpoint file (.pt)",
+        help="Path to SAGE checkpoint file (.pt)",
     )
     parser.add_argument(
         "--output_dir",
@@ -70,14 +70,18 @@ def parse_args():
         help="Random seed for evaluation",
     )
     
-    # TREX-specific evaluation settings
+    # SAGE-specific evaluation settings
     parser.add_argument(
+        "--use_sage_guidance",
+        "--use-sage-guidance",
+        "--use-trex-guidance",
         "--use_trex_guidance",
         type=lambda x: bool(strtobool(x)),
+        dest="use_sage_guidance",
         default=True,
         nargs="?",
         const=True,
-        help="Use TREX guidance during evaluation",
+        help="Use SAGE guidance during evaluation",
     )
     parser.add_argument(
         "--eval_deterministic",
@@ -103,10 +107,10 @@ def parse_args():
 
 def load_checkpoint(checkpoint_path: str, device: torch.device):
     """
-    Load TREX checkpoint and return policy, config, and metadata.
+    Load SAGE checkpoint and return policy, config, and metadata.
     
     Returns:
-        policy: TREXPolicy model
+        policy: SAGEPolicy model
         config_args: Args object with configuration
         metadata: Additional checkpoint metadata
     """
@@ -153,7 +157,7 @@ def load_checkpoint(checkpoint_path: str, device: torch.device):
     envs = gym.vector.SyncVectorEnv([lambda: dummy_env])
     
     # Create policy
-    policy = TREXPolicy(envs, config_args.nodes_counts).to(device)
+    policy = SAGEPolicy(envs, config_args.nodes_counts).to(device)
     
     # Load weights
     policy.actor.load_state_dict(checkpoint["actor"])
@@ -176,7 +180,7 @@ def evaluate_single_episode(
     env,
     initial_state,
     max_steps,
-    use_trex_guidance,
+    use_sage_guidance,
     device,
     deterministic=False,
 ):
@@ -189,7 +193,7 @@ def evaluate_single_episode(
         trajectory: list, sequence of actions (if save_trajectories)
         final_state: np.ndarray, final presentation state
     """
-    from trex.guidance import build_trivial_targets, trex_validity_and_potentials_batch
+    from trex.guidance import build_trivial_targets, sage_validity_and_potentials_batch
     
     obs = torch.tensor(initial_state, dtype=torch.float32).to(device)
     env.reset(options={"starting_state": initial_state})
@@ -199,19 +203,19 @@ def evaluate_single_episode(
     truncated = False
     step_count = 0
     
-    # Precompute trivial targets for TREX guidance
-    if use_trex_guidance:
+    # Precompute trivial targets for SAGE guidance
+    if use_sage_guidance:
         max_relator_length = env.max_relator_length
         trivial_targets = build_trivial_targets(max_relator_length=max_relator_length)
     
     while not done and not truncated and step_count < max_steps:
-        # Compute TREX guidance if enabled
+        # Compute SAGE guidance if enabled
         valid_mask = None
         psi_total = None
         
-        if use_trex_guidance:
+        if use_sage_guidance:
             obs_np = obs.cpu().numpy().reshape(1, -1)
-            valid_masks, psi_totals = trex_validity_and_potentials_batch(
+            valid_masks, psi_totals = sage_validity_and_potentials_batch(
                 states=obs_np,
                 trivial_targets=trivial_targets,
                 lambda_width=1.0,
@@ -235,7 +239,7 @@ def evaluate_single_episode(
                     obs,
                     valid_action_mask=valid_mask,
                     psi_total=psi_total,
-                    trex_lambda=1.0 if use_trex_guidance else 0.0,
+                    sage_lambda=1.0 if use_sage_guidance else 0.0,
                 )
         
         action_np = action.cpu().numpy()[0]
@@ -262,16 +266,16 @@ def evaluate_single_episode(
     }
 
 
-def evaluate_trex(
+def evaluate_sage(
     policy,
     initial_states,
     args,
     device,
-    use_trex_guidance=True,
+    use_sage_guidance=True,
     deterministic=False,
 ):
     """
-    Evaluate TREX policy on a set of AC problems.
+    Evaluate SAGE policy on a set of AC problems.
     
     Returns:
         results: list of evaluation results
@@ -306,7 +310,7 @@ def evaluate_trex(
             env=env,
             initial_state=initial_state,
             max_steps=getattr(args, "max_steps", args.horizon_length),
-            use_trex_guidance=use_trex_guidance,
+            use_sage_guidance=use_sage_guidance,
             device=device,
             deterministic=deterministic,
         )
@@ -379,12 +383,12 @@ def run_evaluation(args):
     print(f"Evaluating on {len(initial_states)} problems")
     
     # Run evaluation
-    results, metrics = evaluate_trex(
+    results, metrics = evaluate_sage(
         policy=policy,
         initial_states=initial_states,
         args=config_args,
         device=device,
-        use_trex_guidance=args.use_trex_guidance,
+        use_sage_guidance=args.use_sage_guidance,
         deterministic=args.eval_deterministic,
     )
     

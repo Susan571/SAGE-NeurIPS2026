@@ -1,5 +1,5 @@
 """
-TREX training loop implementing ASC, TNSC, guided sampling, hybrid rewards, and TREX-style PPO updates.
+SAGE training loop implementing ASC, TNSC, guided sampling, hybrid rewards, and SAGE-style PPO updates.
 """
 
 import math
@@ -16,7 +16,7 @@ from torch import nn
 
 from trex.guidance import (
     build_trivial_targets,
-    trex_validity_and_potentials_batch,
+    sage_validity_and_potentials_batch,
 )
 
 
@@ -70,7 +70,7 @@ def get_curr_lr(n_update, lr_decay, warmup, max_lr, min_lr, total_updates):
     return lrnow
 
 
-def trex_training_loop(
+def sage_training_loop(
     envs,
     args,
     device,
@@ -83,12 +83,12 @@ def trex_training_loop(
     initial_states,
 ):
     """
-    TREX training loop implementing:
+    SAGE training loop implementing:
     - ASC: Active Symbolic Closure (validity masking)
     - TNSC: Topological Neuro-Symbolic Compression (potentials)
     - Topologically Guided Sampling
     - Hybrid Reward (terminal + weak process reward)
-    - TREX-style PPO update with KL penalty
+    - SAGE-style PPO update with KL penalty
     """
     obs = torch.zeros(
         (args.num_steps, args.num_envs) + envs.single_observation_space.shape
@@ -116,13 +116,13 @@ def trex_training_loop(
     returns_queue = deque([0], maxlen=100)
     lengths_queue = deque([0], maxlen=100)
     round1_complete = False
-    beta = args.beta  # TREX uses KL penalty by default
+    beta = args.beta  # SAGE uses KL penalty by default
 
     # Precompute trivial targets for depth potential Ψ_H
     max_relator_length = envs.envs[0].max_relator_length
     trivial_targets = build_trivial_targets(max_relator_length=max_relator_length)
 
-    run_name = f"{args.exp_name}_trex-ffn-nodes_{args.nodes_counts}_{uuid.uuid4()}"
+    run_name = f"{args.exp_name}_sage-ffn-nodes_{args.nodes_counts}_{uuid.uuid4()}"
     out_dir = f"out/{run_name}"
     makedirs(out_dir, exist_ok=True)
     if args.wandb_log:
@@ -135,7 +135,7 @@ def trex_training_loop(
 
     print(f"total number of timesteps: {args.total_timesteps}, updates: {num_updates}")
     for update in tqdm(
-        range(1, num_updates + 1), desc="TREX Training Progress", total=num_updates
+        range(1, num_updates + 1), desc="SAGE Training Progress", total=num_updates
     ):
 
         random.seed(args.seed + update)
@@ -153,30 +153,30 @@ def trex_training_loop(
             )
             optimizer.param_groups[0]["lr"] = lrnow
 
-        # Rollout phase with TREX guidance
+        # Rollout phase with SAGE guidance
         for step in tqdm(
-            range(0, args.num_steps), desc=f"TREX Rollout - {update}", leave=False
+            range(0, args.num_steps), desc=f"SAGE Rollout - {update}", leave=False
         ):
             global_step += 1 * args.num_envs
             obs[step] = next_obs
             dones[step] = next_done
 
-            # Compute TREX validity masks and potentials
+            # Compute SAGE validity masks and potentials
             obs_np = next_obs.cpu().numpy()
-            valid_masks, psi_totals = trex_validity_and_potentials_batch(
+            valid_masks, psi_totals = sage_validity_and_potentials_batch(
                 states=obs_np,
                 trivial_targets=trivial_targets,
-                lambda_width=args.trex_width_coef,
-                lambda_depth=args.trex_depth_coef,
+                lambda_width=args.sage_width_coef,
+                lambda_depth=args.sage_depth_coef,
             )
 
-            # Sample actions with TREX guidance
+            # Sample actions with SAGE guidance
             with torch.no_grad():
                 action, logprob, _, value = policy.get_action_and_value(
                     next_obs,
                     valid_action_mask=valid_masks,
                     psi_total=psi_totals,
-                    trex_lambda=args.trex_lambda,
+                    sage_lambda=args.sage_lambda,
                 )
                 values[step] = value.flatten()
             actions[step] = action
@@ -205,14 +205,14 @@ def trex_training_loop(
 
             # Hybrid reward: R(τ) = 1[τ ∈ T*] + β * Σ_t 1[Valid_S(·) = ⊤]
             # Accumulate valid transitions until first violation, then add reward
-            if args.trex_beta_valid > 0:
+            if args.sage_beta_valid > 0:
                 # Check for environments that violated or ended
                 for i in range(args.num_envs):
                     # Add cumulative reward when violation occurs or episode ends
                     if violation_occurred[i] or done[i] or truncated[i]:
                         # Add cumulative reward for valid transitions until violation/end
                         if cumulative_valid[i] > 0:
-                            reward[i] += args.trex_beta_valid * cumulative_valid[i]
+                            reward[i] += args.sage_beta_valid * cumulative_valid[i]
                         # Reset for next trajectory
                         cumulative_valid[i] = 0.0
                         violation_occurred[i] = False
@@ -320,8 +320,8 @@ def trex_training_loop(
                 )
             returns = advantages + values
 
-        # Group-relative advantage normalization (TREX-style)
-        if args.trex_group_adv:
+        # Group-relative advantage normalization (SAGE-style)
+        if args.sage_group_adv:
             # Normalize advantages within each trajectory/episode
             episode_ids = torch.zeros((args.num_steps, args.num_envs), dtype=torch.long).to(device)
             episode_counter = 0
@@ -356,7 +356,7 @@ def trex_training_loop(
         b_values = values.reshape(-1)
         b_valid_transitions = valid_transitions.reshape(-1)
 
-        # TREX-style PPO update with KL penalty
+        # SAGE-style PPO update with KL penalty
         b_inds = np.arange(args.batch_size)
         clipfracs = []
 
@@ -382,12 +382,12 @@ def trex_training_loop(
                     ]
 
                 mb_advantages = b_advantages[mb_inds]
-                if args.norm_adv and not args.trex_group_adv:
+                if args.norm_adv and not args.sage_group_adv:
                     mb_advantages = (mb_advantages - mb_advantages.mean()) / (
                         mb_advantages.std() + 1e-8
                     )
 
-                # TREX policy loss: PPO clip + KL penalty
+                # SAGE policy loss: PPO clip + KL penalty
                 pg_loss1 = -mb_advantages * ratio
                 pg_loss2 = -mb_advantages * torch.clamp(
                     ratio, 1 - args.clip_coef, 1 + args.clip_coef
@@ -455,8 +455,8 @@ def trex_training_loop(
                     "losses/approx_kl": approx_kl.item(),
                     "losses/explained_variance": explained_var,
                     "losses/clipfrac": np.mean(clipfracs),
-                    "trex/beta": beta,
-                    "trex/valid_transitions_mean": b_valid_transitions.mean().item(),
+                    "sage/beta": beta,
+                    "sage/valid_transitions_mean": b_valid_transitions.mean().item(),
                     "debug/advantages_mean": b_advantages.mean(),
                     "debug/advantages_std": b_advantages.std(),
                 }
@@ -484,9 +484,9 @@ def trex_training_loop(
                 "states_processed": states_processed,
                 "ACMoves_hist": ACMoves_hist,
                 "supermoves": envs.envs[0].supermoves,
-                "trex_beta": beta,
+                "sage_beta": beta,
             }
-            print(f"saving TREX checkpoint to {out_dir}")
+            print(f"saving SAGE checkpoint to {out_dir}")
             torch.save(checkpoint, join(out_dir, "ckpt.pt"))
 
     return
