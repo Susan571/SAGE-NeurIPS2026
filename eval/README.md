@@ -7,7 +7,7 @@ This module provides evaluation scripts for SAGE models on AC problems, followin
 ### Evaluate a Checkpoint
 
 ```bash
-python -m trex.eval.evaluate \
+python -m sage.eval.evaluate \
     --checkpoint_path out/sage_checkpoint.pt \
     --output_dir ./eval_outputs \
     --num_episodes 100 \
@@ -19,7 +19,7 @@ python -m trex.eval.evaluate \
 ### Using Shell Script
 
 ```bash
-bash trex/eval/eval.sh <checkpoint_path> [output_dir] [num_episodes] [states_type]
+bash sage/eval/eval.sh <checkpoint_path> [output_dir] [num_episodes] [states_type]
 ```
 
 ## Evaluation Features

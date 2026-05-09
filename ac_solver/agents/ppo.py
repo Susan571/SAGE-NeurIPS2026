@@ -14,10 +14,10 @@ import numpy as np
 import torch
 import random
 from torch.optim import Adam
-from trex.ac_solver.agents.ppo_agent import Agent
-from trex.ac_solver.agents.args import parse_args
-from trex.ac_solver.agents.environment import get_env
-from trex.ac_solver.agents.training import ppo_training_loop
+from sage.ac_solver.agents.ppo_agent import Agent
+from sage.ac_solver.agents.args import parse_args
+from sage.ac_solver.agents.environment import get_env
+from sage.ac_solver.agents.training import ppo_training_loop
 
 
 def train_ppo():

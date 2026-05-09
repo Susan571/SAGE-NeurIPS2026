@@ -17,7 +17,7 @@ echo "Number of episodes: $NUM_EPISODES"
 echo "States type: $STATES_TYPE"
 echo ""
 
-python -m trex.eval.evaluate \
+python -m sage.eval.evaluate \
     --checkpoint_path "$CHECKPOINT_PATH" \
     --output_dir "$OUTPUT_DIR" \
     --num_episodes "$NUM_EPISODES" \

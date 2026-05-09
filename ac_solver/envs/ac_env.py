@@ -7,8 +7,8 @@ from typing import Union
 import numpy as np
 from gymnasium import Env
 from gymnasium.spaces import Discrete, Box
-from trex.ac_solver.envs.ac_moves import ACMove
-from trex.ac_solver.envs.utils import is_array_valid_presentation
+from sage.ac_solver.envs.ac_moves import ACMove
+from sage.ac_solver.envs.utils import is_array_valid_presentation
 
 
 @dataclass

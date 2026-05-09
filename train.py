@@ -5,7 +5,7 @@ It sets up the training environment, initializes the SAGEPolicy, and runs the SA
 Run this script directly to start training SAGE:
 
 ```
-python -m trex.train --use-sage
+python -m sage.train --use-sage
 ```
 
 To see the entire list of command line arguments you may pass, check args.py
@@ -15,10 +15,10 @@ import numpy as np
 import torch
 import random
 from torch.optim import Adam
-from trex.policy import SAGEPolicy
-from trex.config import parse_args
-from trex.env_setup import get_env
-from trex.training import sage_training_loop
+from sage.policy import SAGEPolicy
+from sage.config import parse_args
+from sage.env_setup import get_env
+from sage.training import sage_training_loop
 
 
 def train_sage():

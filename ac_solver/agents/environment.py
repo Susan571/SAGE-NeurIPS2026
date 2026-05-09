@@ -6,12 +6,12 @@ This file contains helper functions to wrap AC Environment with Gymnasium wrappe
 
 import numpy as np
 import gymnasium as gym
-from trex.ac_solver.envs.ac_env import ACEnvConfig, ACEnv
-from trex.ac_solver.envs.utils import (
+from sage.ac_solver.envs.ac_env import ACEnvConfig, ACEnv
+from sage.ac_solver.envs.utils import (
     convert_relators_to_presentation,
     change_max_relator_length_of_presentation,
 )
-from trex.ac_solver.agents.utils import (
+from sage.ac_solver.agents.utils import (
     load_initial_states_from_text_file,
 )
 

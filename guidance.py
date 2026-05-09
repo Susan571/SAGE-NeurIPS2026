@@ -4,8 +4,8 @@ SAGE guidance utilities for ASC validity masking and TNSC topological potentials
 
 import numpy as np
 
-from trex.ac_solver.envs.ac_moves import ACMove
-from trex.ac_solver.envs.utils import generate_trivial_states
+from sage.ac_solver.envs.ac_moves import ACMove
+from sage.ac_solver.envs.utils import generate_trivial_states
 
 
 def _compute_lengths(presentation: np.ndarray, n_gen: int = 2):

@@ -9,7 +9,7 @@ This module implements the SAGE algorithm for AC problem solving, including:
 - SAGE-style PPO updates
 """
 
-from trex.policy import SAGEPolicy
-from trex.train import train_sage
+from sage.policy import SAGEPolicy
+from sage.train import train_sage
 
 __all__ = ["SAGEPolicy", "train_sage"]
