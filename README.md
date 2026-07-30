@@ -1,4 +1,4 @@
-# SAGE: Mitigating Long-Horizon Reasoning Biases via Topological Structural Guidance
+# SAGE: Mitigating Long-Horizon Reasoning Biases via Topological Guidance
 
 ## Project Structure
 
