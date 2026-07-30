@@ -2,7 +2,7 @@
 Implementation of BFS for AC graph.
 
 Example:
-Trivialize Akbulut-Kirby series n=2 case "AK(2)" through BFS as 
+Trivialize Akbulut-Kirby series n=2 case "AK(2)" through BFS as
 python breadth_first.py
 """
 

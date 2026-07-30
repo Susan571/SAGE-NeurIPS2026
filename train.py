@@ -26,7 +26,7 @@ def train_sage():
     Main training function for SAGE algorithm.
     """
     args = parse_args()
-    
+
     # Ensure SAGE is enabled
     if not args.use_sage:
         print("Warning: --use-sage is False. SAGE features will be limited.")

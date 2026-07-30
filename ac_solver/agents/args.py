@@ -108,8 +108,8 @@ def parse_args():
         default=False,
         nargs="?",
         const=True,
-        help="""each rollout may either start from the same fixed state or from one of many possible states. 
-            If False (default), I use a files containing presentations of Miller-Schupp series. 
+        help="""each rollout may either start from the same fixed state or from one of many possible states.
+            If False (default), I use a files containing presentations of Miller-Schupp series.
             Which file is chosen is determined by states-type arg (see below).
             If True, the presentation is specified by relator1, relator2 and max-length.""",
     )

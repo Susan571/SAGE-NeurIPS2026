@@ -35,7 +35,7 @@ def save_jsonl(samples: list, save_path: Union[str, Path]):
     """Save samples to JSONL file."""
     folder = os.path.dirname(save_path)
     os.makedirs(folder, exist_ok=True)
-    
+
     with open(save_path, "w", encoding="utf-8") as f:
         for sample in samples:
             f.write(json.dumps(sample, ensure_ascii=False) + "\n")
@@ -52,7 +52,7 @@ def save_json(data: dict, save_path: Union[str, Path]):
     """Save data to JSON file."""
     folder = os.path.dirname(save_path)
     os.makedirs(folder, exist_ok=True)
-    
+
     with open(save_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
     print(f"Saved metrics to {save_path}")

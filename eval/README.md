@@ -1,6 +1,6 @@
-# SAGE Evaluation
+# Evaluation
 
-This module provides evaluation scripts for SAGE models on AC problems, following the structure of EMPO-main/eval_math.
+This module evaluates checkpoints in the repository's discrete AC environment.
 
 ## Quick Start
 

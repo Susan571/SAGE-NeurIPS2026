@@ -1,0 +1,43 @@
+# Public reference configuration using the paper-listed Qwen3.5-9B natural-reasoning model.
+# Values absent from Appendix E are explicit engineering defaults.
+model_name: Qwen/Qwen3.5-9B
+dataset_name: TIGER-Lab/MMLU-Pro
+dataset_config: null
+train_split: validation
+task_family: natural
+output_dir: outputs/llm_sage_natural_9b
+seed: 42
+system_prompt: "Reason step by step, then state the final answer clearly."
+group_size: 16
+candidates_per_step: 4
+max_steps: 24
+max_step_tokens: 128
+max_prompt_tokens: 1024
+temperature: 1.0
+top_p: 1.0
+lambda_psi: 1.0
+alpha: 1.0
+gamma: 1.0
+eta: 1.0
+encoder_layer: -1
+encoder_batch_size: 8
+max_prior_states: 50000
+structural_dim: 64
+curvature: 1.0
+hyperbolic_kappa: 1.0
+ridge_xi: 0.001
+subspace_rank: 4
+epsilon: 1.0e-8
+reference_rollouts: 16
+entropy_low: 0.1
+entropy_high: 2.7
+semantic_similarity_threshold: 0.85
+learning_rate: 5.0e-7
+beta_kl: 0.001
+clip_epsilon: 0.2
+epochs: 1
+policy_update_epochs: 2
+max_train_prompts: null
+save_every_steps: 32
+gradient_accumulation_steps: 16
+max_grad_norm: 1.0

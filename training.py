@@ -105,7 +105,7 @@ def sage_training_loop(
     global_step = 0
     next_obs = torch.Tensor(envs.reset()[0]).to(device)
     next_done = torch.zeros(args.num_envs).to(device)
-    
+
     # Track cumulative valid transitions until first violation per environment
     cumulative_valid = np.zeros(args.num_envs, dtype=np.float32)  # cumulative count per env
     violation_occurred = np.zeros(args.num_envs, dtype=bool)  # track if violation happened
@@ -188,7 +188,7 @@ def sage_training_loop(
                 # Skip if violation already occurred for this trajectory
                 if violation_occurred[i]:
                     continue
-                
+
                 # Check if current action is valid
                 if valid_masks[i, action_np[i]]:
                     # Action is valid: accumulate
@@ -220,10 +220,10 @@ def sage_training_loop(
             rewards[step] = torch.tensor(reward).to(device).view(-1)
             episodic_return = episodic_return + reward
             episodic_length = episodic_length + 1
-            
+
             # Track valid transitions for logging
             valid_transitions[step] = torch.tensor([
-                1.0 if valid_masks[i, action_np[i]] else 0.0 
+                1.0 if valid_masks[i, action_np[i]] else 0.0
                 for i in range(args.num_envs)
             ]).to(device)
 
@@ -258,7 +258,7 @@ def sage_training_loop(
                         lengths_queue.append(episodic_length[i])
                         episode += 1
                         episodic_return[i], episodic_length[i] = 0, 0
-                        
+
                         # Reset cumulative valid tracking for new trajectory
                         cumulative_valid[i] = 0.0
                         violation_occurred[i] = False
@@ -330,19 +330,19 @@ def sage_training_loop(
                     if dones[t, i] or (t > 0 and dones[t-1, i]):
                         episode_counter += 1
                     episode_ids[t, i] = episode_counter
-            
+
             b_episode_ids = episode_ids.reshape(-1)
             b_advantages_flat = advantages.reshape(-1)
-            
+
             # Normalize within each episode group
             for ep_id in torch.unique(b_episode_ids):
                 mask = b_episode_ids == ep_id
                 if mask.sum() > 1:
                     b_advantages_flat[mask] = (
-                        (b_advantages_flat[mask] - b_advantages_flat[mask].mean()) 
+                        (b_advantages_flat[mask] - b_advantages_flat[mask].mean())
                         / (b_advantages_flat[mask].std() + 1e-8)
                     )
-            
+
             advantages = b_advantages_flat.reshape(advantages.shape)
 
         # Flatten data
@@ -393,7 +393,7 @@ def sage_training_loop(
                     ratio, 1 - args.clip_coef, 1 + args.clip_coef
                 )
                 pg_loss_clip = torch.max(pg_loss1, pg_loss2).mean()
-                
+
                 # KL penalty term
                 pg_loss_kl = beta * kl_var.mean()
                 pg_loss = pg_loss_clip - pg_loss_kl

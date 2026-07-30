@@ -1,7 +1,7 @@
 """
 This file trains a PPO (Proximal Policy Optimization) agent on AC Environment.
 It sets up the training environment, initializes the agent, and runs the PPO training loop.
-Run this script directly to start training the PPO agent, as simply as 
+Run this script directly to start training the PPO agent, as simply as
 
 ```
 python ppo.py

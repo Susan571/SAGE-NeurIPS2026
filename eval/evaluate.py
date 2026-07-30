@@ -1,8 +1,4 @@
-"""
-SAGE evaluation script for AC problem solving.
-
-Follows the structure of EMPO-main/eval_math for consistency.
-"""
+"""Evaluation utilities for the local discrete AC environment."""
 
 import argparse
 import os
@@ -22,7 +18,7 @@ from sage.eval.utils import set_seed, save_json, save_jsonl
 def parse_args():
     """Parse command-line arguments for evaluation."""
     parser = argparse.ArgumentParser(description="Evaluate SAGE on AC problems")
-    
+
     # Checkpoint and model
     parser.add_argument(
         "--checkpoint_path",
@@ -36,7 +32,7 @@ def parse_args():
         default="./eval_outputs",
         help="Directory to save evaluation results",
     )
-    
+
     # Evaluation settings
     parser.add_argument(
         "--num_envs",
@@ -69,7 +65,7 @@ def parse_args():
         default=42,
         help="Random seed for evaluation",
     )
-    
+
     # SAGE-specific evaluation settings
     parser.add_argument(
         "--use-sage-guidance",
@@ -86,7 +82,7 @@ def parse_args():
         action="store_true",
         help="Use deterministic policy (greedy action selection)",
     )
-    
+
     # Output options
     parser.add_argument(
         "--save_trajectories",
@@ -98,7 +94,7 @@ def parse_args():
         action="store_true",
         help="Save failed cases for analysis",
     )
-    
+
     args = parser.parse_args()
     return args
 
@@ -106,7 +102,7 @@ def parse_args():
 def load_checkpoint(checkpoint_path: str, device: torch.device):
     """
     Load SAGE checkpoint and return policy, config, and metadata.
-    
+
     Returns:
         policy: SAGEPolicy model
         config_args: Args object with configuration
@@ -114,9 +110,9 @@ def load_checkpoint(checkpoint_path: str, device: torch.device):
     """
     print(f"Loading checkpoint from {checkpoint_path}")
     checkpoint = torch.load(checkpoint_path, map_location=device)
-    
+
     config = checkpoint.get("config", {})
-    
+
     # Create dummy args object from config with defaults
     class Args:
         def __init__(self, config_dict):
@@ -130,18 +126,18 @@ def load_checkpoint(checkpoint_path: str, device: torch.device):
             self.norm_rewards = False
             self.clip_rewards = False
             self.max_relator_length = 36
-            
+
             # Override with config values
             for k, v in config_dict.items():
                 setattr(self, k, v)
-    
+
     config_args = Args(config)
-    
+
     # Create a minimal environment to get observation/action spaces
     # Use a simple trivial state for initialization
     import numpy as np
     from sage.ac_solver.envs.ac_env import ACEnv, ACEnvConfig
-    
+
     dummy_state = np.array([1, 0, 2, 0])  # Trivial state <x, y>
     env_config = ACEnvConfig(
         initial_state=dummy_state,
@@ -149,26 +145,26 @@ def load_checkpoint(checkpoint_path: str, device: torch.device):
         use_supermoves=config_args.use_supermoves,
     )
     dummy_env = ACEnv(env_config)
-    
+
     # Create vectorized env wrapper for policy initialization
     import gymnasium as gym
     envs = gym.vector.SyncVectorEnv([lambda: dummy_env])
-    
+
     # Create policy
     policy = SAGEPolicy(envs, config_args.nodes_counts).to(device)
-    
+
     # Load weights
     policy.actor.load_state_dict(checkpoint["actor"])
     policy.critic.load_state_dict(checkpoint["critic"])
     policy.eval()
-    
+
     metadata = {
         "update": checkpoint.get("update", 0),
         "episode": checkpoint.get("episode", 0),
         "mean_return": checkpoint.get("mean_return", 0.0),
         "global_step": checkpoint.get("global_step", 0),
     }
-    
+
     print(f"Loaded checkpoint: update={metadata['update']}, episode={metadata['episode']}")
     return policy, config_args, metadata
 
@@ -184,7 +180,7 @@ def evaluate_single_episode(
 ):
     """
     Evaluate policy on a single AC problem.
-    
+
     Returns:
         success: bool, whether problem was solved
         path_length: int, number of steps taken
@@ -192,25 +188,25 @@ def evaluate_single_episode(
         final_state: np.ndarray, final presentation state
     """
     from sage.guidance import build_trivial_targets, sage_validity_and_potentials_batch
-    
+
     obs = torch.tensor(initial_state, dtype=torch.float32).to(device)
     env.reset(options={"starting_state": initial_state})
-    
+
     trajectory = []
     done = False
     truncated = False
     step_count = 0
-    
+
     # Precompute trivial targets for SAGE guidance
     if use_sage_guidance:
         max_relator_length = env.max_relator_length
         trivial_targets = build_trivial_targets(max_relator_length=max_relator_length)
-    
+
     while not done and not truncated and step_count < max_steps:
         # Compute SAGE guidance if enabled
         valid_mask = None
         psi_total = None
-        
+
         if use_sage_guidance:
             obs_np = obs.cpu().numpy().reshape(1, -1)
             valid_masks, psi_totals = sage_validity_and_potentials_batch(
@@ -221,7 +217,7 @@ def evaluate_single_episode(
             )
             valid_mask = valid_masks[0]
             psi_total = psi_totals[0]
-        
+
         # Get action from policy
         with torch.no_grad():
             if deterministic:
@@ -239,22 +235,22 @@ def evaluate_single_episode(
                     psi_total=psi_total,
                     sage_lambda=1.0 if use_sage_guidance else 0.0,
                 )
-        
+
         action_np = action.cpu().numpy()[0]
         trajectory.append(int(action_np))
-        
+
         # Step environment
         next_obs, reward, done, truncated, info = env.step(action_np)
         obs = torch.tensor(next_obs, dtype=torch.float32).to(device)
-        
+
         step_count += 1
-        
+
         if done:
             break
-    
+
     success = done
     final_state = env.state.copy()
-    
+
     return {
         "success": success,
         "path_length": step_count,
@@ -274,25 +270,25 @@ def evaluate_sage(
 ):
     """
     Evaluate SAGE policy on a set of AC problems.
-    
+
     Returns:
         results: list of evaluation results
         metrics: dict of aggregated metrics
     """
     from sage.ac_solver.envs.ac_env import ACEnv, ACEnvConfig
-    
+
     results = []
     num_solved = 0
     path_lengths = []
-    
+
     print(f"Evaluating on {len(initial_states)} problems...")
-    
+
     # Ensure args has required attributes
     if not hasattr(args, "horizon_length"):
         args.horizon_length = getattr(args, "max_steps", 2000)
     if not hasattr(args, "use_supermoves"):
         args.use_supermoves = False
-    
+
     for idx, initial_state in enumerate(tqdm(initial_states, desc="Evaluating")):
         # Create environment directly for this problem
         env_config = ACEnvConfig(
@@ -301,7 +297,7 @@ def evaluate_sage(
             use_supermoves=args.use_supermoves,
         )
         env = ACEnv(env_config)
-        
+
         # Evaluate
         result = evaluate_single_episode(
             policy=policy,
@@ -312,22 +308,22 @@ def evaluate_sage(
             device=device,
             deterministic=deterministic,
         )
-        
+
         result["idx"] = idx
         result["initial_state"] = initial_state.tolist()
-        
+
         if result["success"]:
             num_solved += 1
             path_lengths.append(result["path_length"])
-        
+
         results.append(result)
-    
+
     # Compute metrics
     success_rate = num_solved / len(initial_states) if initial_states else 0.0
     avg_path_length = np.mean(path_lengths) if path_lengths else 0.0
     min_path_length = min(path_lengths) if path_lengths else 0
     max_path_length = max(path_lengths) if path_lengths else 0
-    
+
     metrics = {
         "num_problems": len(initial_states),
         "num_solved": num_solved,
@@ -338,20 +334,20 @@ def evaluate_sage(
         "max_path_length": int(max_path_length),
         "path_lengths": [int(x) for x in path_lengths],
     }
-    
+
     return results, metrics
 
 
 def run_evaluation(args):
     """Main evaluation function."""
     set_seed(args.seed)
-    
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
-    
+
     # Load checkpoint
     policy, config_args, metadata = load_checkpoint(args.checkpoint_path, device)
-    
+
     # Override config with eval args
     config_args.num_envs = args.num_envs
     config_args.max_steps = args.max_steps
@@ -368,18 +364,18 @@ def run_evaluation(args):
         config_args.min_rew = -10
     if not hasattr(config_args, "max_rew"):
         config_args.max_rew = 1000
-    
+
     # Load initial states
     from sage.utils import load_initial_states_from_text_file
-    
+
     initial_states = load_initial_states_from_text_file(states_type=args.states_type)
-    
+
     # Limit number of episodes if specified
     if args.num_episodes > 0:
         initial_states = initial_states[: args.num_episodes]
-    
+
     print(f"Evaluating on {len(initial_states)} problems")
-    
+
     # Run evaluation
     results, metrics = evaluate_sage(
         policy=policy,
@@ -389,32 +385,32 @@ def run_evaluation(args):
         use_sage_guidance=args.use_sage_guidance,
         deterministic=args.eval_deterministic,
     )
-    
+
     # Prepare output
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     checkpoint_name = os.path.basename(args.checkpoint_path).replace(".pt", "")
     output_dir = os.path.join(args.output_dir, checkpoint_name)
     os.makedirs(output_dir, exist_ok=True)
-    
+
     # Save results
     output_file = os.path.join(output_dir, f"eval_results_{timestamp}.jsonl")
-    
+
     # Filter results based on save options
     results_to_save = results
     if not args.save_trajectories:
         results_to_save = [
             {k: v for k, v in r.items() if k != "trajectory"} for r in results
         ]
-    
+
     save_jsonl(results_to_save, output_file)
-    
+
     # Save metrics
     metrics_file = os.path.join(output_dir, f"metrics_{timestamp}.json")
     metrics["checkpoint_path"] = args.checkpoint_path
     metrics["checkpoint_metadata"] = metadata
     metrics["eval_config"] = vars(args)
     save_json(metrics, metrics_file)
-    
+
     # Save failed cases if requested
     if args.save_failed:
         failed_results = [r for r in results if not r["success"]]
@@ -422,7 +418,7 @@ def run_evaluation(args):
             failed_file = os.path.join(output_dir, f"failed_cases_{timestamp}.jsonl")
             save_jsonl(failed_results, failed_file)
             print(f"Saved {len(failed_results)} failed cases to {failed_file}")
-    
+
     # Print summary
     print("\n" + "=" * 50)
     print("Evaluation Summary")
@@ -437,7 +433,7 @@ def run_evaluation(args):
         print(f"Max path length: {metrics['max_path_length']}")
     print("=" * 50)
     print(f"\nResults saved to: {output_dir}")
-    
+
     return results, metrics
 
 

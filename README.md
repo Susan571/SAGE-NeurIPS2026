@@ -12,6 +12,9 @@ sage/
 ├── env_setup.py      # Environment initialization
 ├── utils.py          # Helper functions
 ├── eval/             # Evaluation scripts
+├── llm_sage/         # LLM candidate sampling, label-free prior, and GRPO
+├── train_llm.py      # Reference rollouts and structural-prior pipeline
+├── configs/          # Public LLM reference configurations
 └── ac_solver/        # AC problem generator and environment
     ├── envs/         # AC environment implementation
     ├── search/       # Classical search algorithms (BFS, Greedy)
@@ -20,7 +23,51 @@ sage/
 
 ## Start
 
-### Training
+### LLM + GRPO/SAGE pipeline
+
+`train_llm.py` and `llm_sage/` provide a public reference implementation of
+the Appendix E training path: fixed reference-policy entropy filtering, finite
+candidate-step SAGE sampling, the label-free learned structural prior,
+trajectory reward construction, and the clipped step-level group-relative
+update. Structural modules are used only during training; `eval_llm.py`
+evaluates the trained policy directly.
+
+```bash
+pip install -e '.[llm]'
+python train_llm.py prepare-data \
+  --config configs/llm_sage_math_2b.yaml \
+  --output data/train_prompts.jsonl
+python train_llm.py collect \
+  --config configs/llm_sage_math_2b.yaml \
+  --input data/train_prompts.jsonl \
+  --output artifacts/reference_rollouts.jsonl
+python train_llm.py fit-prior \
+  --config configs/llm_sage_math_2b.yaml \
+  --input artifacts/reference_rollouts.jsonl \
+  --output artifacts/structural_prior.pt
+python train_llm.py train \
+  --config configs/llm_sage_math_2b.yaml \
+  --input artifacts/reference_rollouts.jsonl \
+  --prior artifacts/structural_prior.pt \
+  --output outputs/llm_sage_math_2b
+python eval_llm.py \
+  --config configs/llm_sage_math_2b.yaml \
+  --model outputs/llm_sage_math_2b/final \
+  --input data/test.jsonl \
+  --output eval_outputs/predictions.jsonl
+```
+
+`configs/llm_sage_math_2b.yaml` and
+`configs/llm_sage_natural_9b.yaml` use the paper-listed Qwen3.5-2B and
+Qwen3.5-9B model families. The release is intended for mechanism-level
+inspection and adaptation. Values not specified in the paper are explicit
+engineering defaults; the repository does not include the private experiment
+stack needed for exact table reproduction.
+
+### Legacy discrete AC proof of concept
+
+The commands and options below describe the original discrete symbolic AC
+environment. This path is separate from the LLM training pipeline above.
 
 ```bash
 python -m sage.train --use-sage
@@ -67,14 +114,14 @@ python -m sage.eval.evaluate \
 - `--learning-rate`: Learning rate (default: 2.5e-4)
 - `--gamma`: Discount factor (default: 0.99)
 
-## Algorithm Components
+## Legacy AC Algorithm Components
 
 ### ASC: Active Symbolic Closure
 Local validity checking and prefix-level pruning to keep trajectories in feasible set **F**. Invalid actions are masked before sampling.
 
 ### TNSC: Topological Neuro-Symbolic Compression
 - **Width Potential (Ψ_P)**: Prefers actions that reduce total relator length
-- **Depth Potential (Ψ_H)**: Measures distance to closest trivial target (Euclidean placeholder)
+- **Depth Potential (Ψ_H)**: Measures distance to the closest trivial target using a legacy AC Euclidean placeholder; the LLM learned prior above uses Poincaré geometry
 - **Combined**: `Ψ_total = λ_width · Ψ_P + λ_depth · Ψ_H`
 
 ### Topologically Guided Sampling
@@ -96,6 +143,6 @@ PPO clip + KL penalty with adaptive beta. Optional group-relative advantage norm
 
 ## Notes
 
-- **Depth Potential**: Uses Euclidean distance as placeholder (can be upgraded to Poincaré ball)
+- **Depth Potential**: The Euclidean placeholder applies only to the legacy AC path; the LLM learned prior uses the Poincaré-ball construction in `llm_sage/structural_prior.py`
 - **Hybrid Reward**: Accumulates valid transitions until first violation, then adds reward
 - **AC Generator**: The `ac_solver` module provides the environment for AC problem  generation

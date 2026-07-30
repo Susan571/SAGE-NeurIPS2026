@@ -168,7 +168,7 @@ def trivialize_miller_schupp_through_search(
         )
         write_list_to_text_file(list=solved_paths, filepath=filepath_base + "_paths")
         print(
-            f"""saved output in {dirname} with filenames: 
+            f"""saved output in {dirname} with filenames:
                 {filename_base + "_solved"}
                 {filename_base + "_unsolved"}
                 {filename_base + "_paths"}"""

@@ -1,5 +1,5 @@
 """
-This file contains some helper functions for PPO agents. 
+This file contains some helper functions for PPO agents.
 
 """
 

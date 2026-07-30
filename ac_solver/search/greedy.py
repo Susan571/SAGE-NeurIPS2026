@@ -2,7 +2,7 @@
 Implementation of greedy search for AC graph.
 
 Example:
-Trivialize Akbulut-Kirby series n=2 case "AK(2)" through greedy search as 
+Trivialize Akbulut-Kirby series n=2 case "AK(2)" through greedy search as
 python greedy.py
 """
 
