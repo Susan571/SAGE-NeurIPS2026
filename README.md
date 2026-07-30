@@ -140,9 +140,3 @@ PPO clip + KL penalty with adaptive beta. Optional group-relative advantage norm
 - Gymnasium
 - WandB (optional, for logging)
 - tqdm
-
-## Notes
-
-- **Depth Potential**: The Euclidean placeholder applies only to the legacy AC path; the LLM learned prior uses the Poincaré-ball construction in `llm_sage/structural_prior.py`
-- **Hybrid Reward**: Accumulates valid transitions until first violation, then adds reward
-- **AC Generator**: The `ac_solver` module provides the environment for AC problem  generation
