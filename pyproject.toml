@@ -10,10 +10,29 @@ dependencies = ["torch"]
 
 [project.optional-dependencies]
 llm = ["accelerate>=1.0", "datasets>=3.0", "pyyaml>=6.0", "transformers>=5.12.0"]
+ac = ["numpy", "gymnasium", "tqdm", "wandb"]
 
 [tool.setuptools]
-packages = ["llm_sage"]
+packages = [
+  "sage",
+  "sage.eval",
+  "sage.ac_solver",
+  "sage.ac_solver.agents",
+  "sage.ac_solver.envs",
+  "sage.ac_solver.search",
+  "sage.ac_solver.search.miller_schupp",
+  "sage.ac_solver.search.miller_schupp.data",
+  "llm_sage",
+]
+package-dir = {"sage" = "."}
 py-modules = ["train_llm", "eval_llm"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"sage.ac_solver" = [
+  "RLpath1546.txt",
+  "search/miller_schupp/data/*.txt",
+]
 
 [project.scripts]
 sage-llm-train = "train_llm:main"

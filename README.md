@@ -2,141 +2,137 @@
 
 ## Project Structure
 
-```
-sage/
-├── train.py          # Main training entry point
-├── training.py       # SAGE training loop
-├── policy.py         # SAGEPolicy (actor-critic)
-├── guidance.py       # ASC validity masking + TNSC potentials
-├── config.py         # Command-line arguments
-├── env_setup.py      # Environment initialization
-├── utils.py          # Helper functions
-├── eval/             # Evaluation scripts
-├── llm_sage/         # LLM candidate sampling, label-free prior, and GRPO
-├── train_llm.py      # Reference rollouts and structural-prior pipeline
-├── configs/          # Public LLM reference configurations
-└── ac_solver/        # AC problem generator and environment
-    ├── envs/         # AC environment implementation
-    ├── search/       # Classical search algorithms (BFS, Greedy)
-    └── agents/       # PPO baseline for comparison
+```text
+SAGE-Long-Horizon-Reasoning/
+├── train_llm.py      # LLM data, rollout, prior-fitting, and GRPO/SAGE entry point
+├── eval_llm.py       # Direct-policy LLM evaluation
+├── llm_sage/         # Candidate sampling, learned structural prior, and GRPO
+├── train.py          # Legacy discrete AC training entry point
+├── eval/             # Legacy discrete AC evaluation
+├── ac_solver/        # AC environment, agents, and classical search
+└── pyproject.toml    # Package metadata and dependencies
 ```
 
-## Start
+## LLM + GRPO/SAGE Pipeline
 
-### LLM + GRPO/SAGE pipeline
+`train_llm.py` and `llm_sage/` implement the LLM post-training mechanism:
+fixed-reference entropy filtering, finite candidate-step SAGE sampling, the
+label-free learned structural prior, trajectory reward construction, and the
+clipped step-level group-relative update. Structural modules are used during
+training; `eval_llm.py` evaluates the trained policy directly.
 
-`train_llm.py` and `llm_sage/` provide a public reference implementation of
-the Appendix E training path: fixed reference-policy entropy filtering, finite
-candidate-step SAGE sampling, the label-free learned structural prior,
-trajectory reward construction, and the clipped step-level group-relative
-update. Structural modules are used only during training; `eval_llm.py`
-evaluates the trained policy directly.
+Install the LLM dependencies:
 
 ```bash
 pip install -e '.[llm]'
-python train_llm.py prepare-data \
-  --config configs/llm_sage_math_2b.yaml \
-  --output data/train_prompts.jsonl
-python train_llm.py collect \
-  --config configs/llm_sage_math_2b.yaml \
-  --input data/train_prompts.jsonl \
-  --output artifacts/reference_rollouts.jsonl
-python train_llm.py fit-prior \
-  --config configs/llm_sage_math_2b.yaml \
-  --input artifacts/reference_rollouts.jsonl \
-  --output artifacts/structural_prior.pt
-python train_llm.py train \
-  --config configs/llm_sage_math_2b.yaml \
-  --input artifacts/reference_rollouts.jsonl \
-  --prior artifacts/structural_prior.pt \
-  --output outputs/llm_sage_math_2b
-python eval_llm.py \
-  --config configs/llm_sage_math_2b.yaml \
-  --model outputs/llm_sage_math_2b/final \
-  --input data/test.jsonl \
-  --output eval_outputs/predictions.jsonl
 ```
 
-`configs/llm_sage_math_2b.yaml` and
-`configs/llm_sage_natural_9b.yaml` use the paper-listed Qwen3.5-2B and
-Qwen3.5-9B model families. The release is intended for mechanism-level
-inspection and adaptation. Values not specified in the paper are explicit
-engineering defaults; the repository does not include the private experiment
-stack needed for exact table reproduction.
+Provide a configuration, datasets, model weights, and output locations, then
+run:
 
-### Legacy discrete AC proof of concept
+```bash
+python train_llm.py prepare-data \
+  --config <path-to-config.yaml> \
+  --output <path-to-train.jsonl>
 
-The commands and options below describe the original discrete symbolic AC
-environment. This path is separate from the LLM training pipeline above.
+python train_llm.py collect \
+  --config <path-to-config.yaml> \
+  --input <path-to-train.jsonl> \
+  --output <path-to-reference-rollouts.jsonl>
+
+python train_llm.py fit-prior \
+  --config <path-to-config.yaml> \
+  --input <path-to-reference-rollouts.jsonl> \
+  --output <path-to-structural-prior.pt>
+
+python train_llm.py train \
+  --config <path-to-config.yaml> \
+  --input <path-to-reference-rollouts.jsonl> \
+  --prior <path-to-structural-prior.pt> \
+  --output <output-directory>
+
+python eval_llm.py \
+  --config <path-to-config.yaml> \
+  --model <path-to-trained-model> \
+  --input <path-to-test.jsonl> \
+  --output <path-to-predictions.jsonl>
+```
+
+The repository exposes the LLM + GRPO/SAGE pipeline and learned structural
+prior at the mechanism level. Configurations, datasets, model weights, and
+checkpoints are user-provided; this release does not claim exact numerical
+reproduction of every paper table.
+
+## Legacy Discrete AC Proof of Concept
+
+The original discrete symbolic AC environment is packaged as `sage`. It is
+separate from the LLM training pipeline above.
+
+Install its dependencies:
+
+```bash
+pip install -e '.[ac]'
+```
+
+Train:
 
 ```bash
 python -m sage.train --use-sage
 ```
 
-### Full Training Example
+Full training example:
 
 ```bash
 python -m sage.train \
-    --use-sage \
-    --sage-lambda 1.5 \
-    --sage-width-coef 1.0 \
-    --sage-depth-coef 1.0 \
-    --sage-beta-valid 0.1 \
-    --sage-group-adv \
-    --num-envs 8 \
-    --total-timesteps 1000000 \
-    --wandb-log
+  --use-sage \
+  --sage-lambda 1.5 \
+  --sage-width-coef 1.0 \
+  --sage-depth-coef 1.0 \
+  --sage-beta-valid 0.1 \
+  --sage-group-adv \
+  --num-envs 8 \
+  --total-timesteps 1000000 \
+  --wandb-log
 ```
 
-### Evaluation
+Evaluate a supplied checkpoint without legacy inference-time guidance:
 
 ```bash
 python -m sage.eval.evaluate \
-    --checkpoint_path out/sage_checkpoint.pt \
-    --num_episodes 100 \
-    --use_sage_guidance
+  --checkpoint_path <path-to-checkpoint.pt> \
+  --num_episodes 100 \
+  --use_sage_guidance false
 ```
 
-## Key Arguments
+Setting `--use_sage_guidance true` enables the legacy diagnostic mode, which
+recomputes structural guidance during evaluation and therefore adds
+inference-time computation. It is not the direct-policy LLM inference path
+described above.
 
-### SAGE-Specific
-- `--use-sage`: Enable SAGE features
-- `--sage-lambda`: Global scale λ for topological potential (default: 1.0)
-- `--sage-width-coef`: Weight for width potential Ψ_P (default: 1.0)
-- `--sage-depth-coef`: Weight for depth potential Ψ_H (default: 1.0)
-- `--sage-beta-valid`: Coefficient β for weak process reward (default: 0.0)
-- `--sage-group-adv`: Enable group-relative advantage normalization
+## Legacy AC Arguments
 
-### Standard RL
-- `--num-envs`: Number of parallel environments (default: 4)
-- `--num-steps`: Steps per rollout (default: 2000)
-- `--total-timesteps`: Total training timesteps (default: 200000)
-- `--learning-rate`: Learning rate (default: 2.5e-4)
-- `--gamma`: Discount factor (default: 0.99)
+SAGE-specific:
 
-## Legacy AC Algorithm Components
+- `--use-sage`: enable SAGE features
+- `--sage-lambda`: global scale for the topological potential
+- `--sage-width-coef`: weight for the width potential
+- `--sage-depth-coef`: weight for the depth potential
+- `--sage-beta-valid`: coefficient for the weak process reward
+- `--sage-group-adv`: enable group-relative advantage normalization
 
-### ASC: Active Symbolic Closure
-Local validity checking and prefix-level pruning to keep trajectories in feasible set **F**. Invalid actions are masked before sampling.
+Standard RL:
 
-### TNSC: Topological Neuro-Symbolic Compression
-- **Width Potential (Ψ_P)**: Prefers actions that reduce total relator length
-- **Depth Potential (Ψ_H)**: Measures distance to the closest trivial target using a legacy AC Euclidean placeholder; the LLM learned prior above uses Poincaré geometry
-- **Combined**: `Ψ_total = λ_width · Ψ_P + λ_depth · Ψ_H`
-
-### Topologically Guided Sampling
-Policy logits augmented with topological potential: `logits = base_logits + λ · Ψ_total`
-
-### Hybrid Reward
-`R(τ) = 1[τ ∈ T*] + β · Σ_t 1[Valid_S(·) = ⊤]` - accumulates valid transitions until first violation.
-
-### Policy Update
-PPO clip + KL penalty with adaptive beta. Optional group-relative advantage normalization.
+- `--num-envs`: number of parallel environments
+- `--num-steps`: steps per rollout
+- `--total-timesteps`: total training timesteps
+- `--learning-rate`: learning rate
+- `--gamma`: discount factor
 
 ## Dependencies
 
 - PyTorch
 - NumPy
 - Gymnasium
-- WandB (optional, for logging)
 - tqdm
+- Weights & Biases
+- Transformers, Accelerate, Datasets, and PyYAML for the LLM path
