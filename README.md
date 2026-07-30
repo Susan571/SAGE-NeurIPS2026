@@ -58,11 +58,6 @@ python eval_llm.py \
   --output <path-to-predictions.jsonl>
 ```
 
-The repository exposes the LLM + GRPO/SAGE pipeline and learned structural
-prior at the mechanism level. Configurations, datasets, model weights, and
-checkpoints are user-provided; this release does not claim exact numerical
-reproduction of every paper table.
-
 ## Legacy Discrete AC Proof of Concept
 
 The original discrete symbolic AC environment is packaged as `sage`. It is
