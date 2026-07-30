@@ -90,19 +90,13 @@ python -m sage.train \
   --wandb-log
 ```
 
-Evaluate a supplied checkpoint without legacy inference-time guidance:
+Evaluate a supplied checkpoint:
 
 ```bash
 python -m sage.eval.evaluate \
   --checkpoint_path <path-to-checkpoint.pt> \
-  --num_episodes 100 \
-  --use_sage_guidance false
+  --num_episodes 100
 ```
-
-Setting `--use_sage_guidance true` enables the legacy diagnostic mode, which
-recomputes structural guidance during evaluation and therefore adds
-inference-time computation. It is not the direct-policy LLM inference path
-described above.
 
 ## Legacy AC Arguments
 
