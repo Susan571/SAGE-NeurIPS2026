@@ -1,10 +1,8 @@
-# <a href="https://github.com/Susan571/SAGE-NeurIPS2026" style="color: black !important;">SAGE: Mitigating Long-Horizon Reasoning Biases via Topological Guidance</a>
+# <a href="https://arxiv.org/abs/2609.30192" style="color: black !important;">SAGE: Mitigating Long-Horizon Reasoning Biases via Topological Guidance [NeurIPS 2026]</a>
 
-**Xinyue Zeng, Jiawei Zhang, Yujun Yan, Dawei Zhou**
+**Xinyue Zeng¹, Jiawei Zhang², Yujun Yan³, Dawei Zhou¹**
 
-*Accepted by NeurIPS 2026*
-
-<a href="https://arxiv.org/abs/2609.30192">[Paper]</a>
+¹ Virginia Tech · ² University of Wisconsin–Madison · ³ Dartmouth College
 
 ---
 
