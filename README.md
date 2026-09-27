@@ -4,7 +4,7 @@
 
 *Accepted by NeurIPS 2026*
 
-<a href="https://arxiv.org/abs/2609.30192">[Paper]</a> · <a href="https://github.com/Susan571/SAGE-NeurIPS2026">[Code]</a>
+<a href="https://arxiv.org/abs/2609.30192">[Paper]</a>
 
 ---
 
