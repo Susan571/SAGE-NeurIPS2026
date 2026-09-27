@@ -1,5 +1,13 @@
 # <a href="https://github.com/Susan571/SAGE-NeurIPS2026" style="color: black !important;">SAGE: Mitigating Long-Horizon Reasoning Biases via Topological Guidance</a>
 
+**Xinyue Zeng, Jiawei Zhang, Yujun Yan, Dawei Zhou**
+
+*Accepted by NeurIPS 2026*
+
+<a href="https://arxiv.org/abs/2609.30192">[Paper]</a> · <a href="https://github.com/Susan571/SAGE-NeurIPS2026">[Code]</a>
+
+---
+
 SAGE is a topological-guidance framework for improving multi-step reasoning.
 Instead of treating every generated step as equally useful, SAGE combines
 local validity constraints, structural potentials, and group-relative policy
@@ -20,19 +28,24 @@ This repository contains two implementations:
 
 ## 📌 Abstract
 
-Long-horizon reasoning can fail even when individual generation steps appear
-locally plausible. Small structural inconsistencies accumulate over time,
-causing the policy to drift away from useful solution trajectories. SAGE
-addresses this problem by introducing structural guidance into both sampling
-and policy optimization.
+Long-horizon reasoning remains a central challenge for large language models
+(LLMs) under sparse-reward regimes. We identify two biases induced by complex
+reasoning spaces: an **exploration bias**, where models are drawn toward
+locally plausible but structurally unstable branches, and a **compounding
+bias**, where small local deviations accumulate across depth and suppress rare
+rewards.
 
-For each candidate step, SAGE estimates whether the step is locally admissible
-and how it changes the trajectory's structural position. These signals are
-combined with the task outcome to form a hybrid trajectory reward. In the LLM
-path, the structural signal is learned without correctness labels from frozen
-reference rollouts; in the discrete AC path, it is computed directly from
-symbolic states. The resulting guidance can be used during rollout while the
-policy is optimized with a clipped, group-relative update and KL regularization.
+We introduce **Symbolic Closure Analysis (SCA)** as a theoretical lens for
+characterizing how branching structures and sparse rewards induce these biases.
+Motivated by this analysis, we propose **Structural Admissibility-Guided
+Exploration (SAGE)**, a unified framework that injects structural guidance into
+long-horizon reasoning. SAGE combines algebraic sparsification, which projects
+locally admissible candidates onto operator-indexed subspaces to reduce
+spurious branching, with hyperbolic structural guidance, which embeds reasoning
+states into a negatively curved space to provide dense depth-wise signals.
+
+The repository provides an auditable implementation of these ideas for LLM
+post-training and for the Andrews-Curtis symbolic reasoning environment.
 
 ---
 
